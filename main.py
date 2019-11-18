@@ -1,19 +1,14 @@
 from game import Game, GameDifficulty
 from game_engine import GameEngine
-
 from threading import Thread
 import time
 
+# File names to import the DFA. 
 GAME_STATES_FILENAME = "game_states.txt"
 GAME_TRANSITIONS_FILENAME = "game_transitions.txt"
 
-def question_timer(t):
-    
-    for i in range(t):
-        print("Time: {}\r\n".format(i))
-        time.sleep(1)
-    
 def main():
+    # Take User's name input until valid. 
     while True:
         user_name = input("Name: ").strip()
         if user_name.isalpha():
@@ -33,6 +28,7 @@ def main():
                 break
             print("Invalid choice. Please choose a number from 1 to 3.")
         
+        # Game object that contains all the information about a game session. 
         game = Game(
             game_engine = GameEngine.BuildGameEngineFromStatesAndTransitions(GAME_STATES_FILENAME, GAME_TRANSITIONS_FILENAME),
             player_name = user_name,
@@ -44,10 +40,6 @@ def main():
         while not game.is_game_over():
             
             curr_question = game.get_question()
-            timer = curr_question.time
-
-            # Start timer. 
-            Thread(target = question_timer, args= [timer]).start()
 
             while True:
                 try:
@@ -58,7 +50,7 @@ def main():
                 
                 
                 
-                if timer >= 0 and game.submit_answer(answer): # Correct.
+                if game.submit_answer(answer): # Correct.
                     print("Good one!")
                 else:
                     print("You missed it! :(")

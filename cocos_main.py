@@ -1,3 +1,5 @@
+# TODO: Refactor 
+
 import cocos 
 from cocos.text import Label 
 from cocos import scene 
@@ -24,6 +26,11 @@ game = None
 GAME_STATES_FILENAME = "game_states.txt"
 GAME_TRANSITIONS_FILENAME = "game_transitions.txt"
 
+
+"""
+Initial Screen when the game is started. 
+Takes the user's name as input and transitions to the next Layer. 
+"""
 class IntroductionLayer(ColorLayer):
     is_event_handler = True
     
@@ -83,6 +90,10 @@ class IntroductionLayer(ColorLayer):
             self.player_name += char_key 
             self.update_player_name()
         
+"""
+After the user enters his/her name, this Layer is displayed which shows a menu to 
+choose the game difficulty. 
+"""
 class DifficultyLayer(Menu):
     is_event_handler = True
 
@@ -124,6 +135,12 @@ class DifficultyLayer(Menu):
         director.replace(FadeTransition(Scene(GameScreen())))
         print("Game Initialized")
 
+"""
+This is the main game screen which displays a timer and the question 
+with options to choose from. 
+
+This screen also has the score board. 
+"""
 class GameScreen(ColorLayer):
     is_event_handler = True 
 
@@ -195,7 +212,10 @@ class GameScreen(ColorLayer):
 
     def update_timer(self):
         self.timer_label.element.text  = self.format_time(self.question.time)
-        
+
+"""
+This layer is shown the user exceeds the time limit on the question.
+"""     
 class TimeLimitExceeded(ColorLayer):
     is_event_handler = True
 
@@ -243,6 +263,7 @@ class TimeLimitExceeded(ColorLayer):
             print("Moving on to next question")
             director.replace(FadeTransition(Scene(GameScreen())))
 
+# Starting off the cocos2d application
 director.init(
     autoscale = True, 
     caption = "Geek Tennis"

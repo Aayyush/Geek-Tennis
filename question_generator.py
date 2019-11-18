@@ -6,6 +6,10 @@ class GameDifficulty(enum.Enum):
     Medium = 2 
     Hard = 3 
 
+"""
+Question object. 
+Specifies timer for the question. 
+"""
 class Question:
     def __init__(self, operand_1, operand_2, operation, time):
         self.operand_1 = int(operand_1)
@@ -31,7 +35,9 @@ class Question:
     def __str__(self):
         return "{} {} {}".format(self.operand_1, self.operation, self.operand_2)
     
-
+"""
+Generates Quesiton object based on difficulty set by the user. 
+"""
 class QuestionGenerator:
     def __init__(self, difficulty = GameDifficulty.Easy):
         self.difficulty = difficulty

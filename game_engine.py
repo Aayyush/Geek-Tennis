@@ -10,6 +10,10 @@ class Action(enum.Enum):
     Win = 1
     Loose = 2 
 
+"""
+StateNode represents individual nodes in the DFA. 
+Transitions for win and loose point. 
+"""
 class StateNode:
     def __init__(self, name):
         self.name = name
@@ -25,6 +29,10 @@ class StateNode:
     def __str__(self):
         return self.name
 
+"""
+GameEngine uses the game_states.txt and game_transitions.txt to load up the DFA. 
+The game uses this engine to track the user's state at any time. 
+"""
 class GameEngine:
     def __init__(self, start):
         self.start = start

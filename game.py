@@ -2,6 +2,9 @@ import enum
 from game_engine import Action
 from question_generator import QuestionGenerator, GameDifficulty
 
+"""
+Game object that tracks all the information about a game session. 
+"""
 class Game:
     def __init__(self, game_engine, player_name, difficulty_level = GameDifficulty.Easy):
         self.player_name = player_name
