@@ -1,4 +1,4 @@
-###Introduction 
+##Introduction 
 Geek Tennis is a simple math trivia based game that uses the scoring mechanism used in tennis. 
 
 ## Design Document 
