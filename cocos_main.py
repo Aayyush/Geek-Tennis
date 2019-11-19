@@ -1,5 +1,6 @@
 # TODO: Refactor 
 
+import sys
 import cocos 
 from cocos.text import Label 
 from cocos import scene 
@@ -14,10 +15,14 @@ from pyglet.window.key import symbol_string
 from game import GameDifficulty, Game
 from game_engine import GameEngine
 
-from threading import Thread
+from threading import Thread, Timer
 from question_generator import Question
 
 import time
+
+from cocos.actions import IntervalAction
+from cocos.actions.interval_actions import MoveTo
+from cocos import cocosnode
 
 playerName = ""
 difficultyLevel = None 
@@ -135,6 +140,29 @@ class DifficultyLayer(Menu):
         director.replace(FadeTransition(Scene(GameScreen())))
         print("Game Initialized")
 
+is_timer_done = False 
+
+class AnotherAction(IntervalAction):
+    def __init__(self, duration = 1):
+        super(UpdateTimerAction, self).__init__()
+        self.duration = duration
+
+    def update(self, t):
+        self.instruction_label.element.text = "Done!"
+        
+class UpdateTimerAction(IntervalAction):
+    
+    def __init__(self, duration):
+        super(UpdateTimerAction, self).__init__()
+        self.duration  = duration
+    
+    def update(self, t):
+        """
+        t is from 0 to 1 which evenly maps out the time interval 
+        """
+        self.target.element.text = str(self.duration - int(t*self.duration))
+        
+        
 """
 This is the main game screen which displays a timer and the question 
 with options to choose from. 
@@ -146,14 +174,18 @@ class GameScreen(ColorLayer):
 
     def __init__(self):
         super(GameScreen, self).__init__(0xBF907A, 0x806052, 0xFFC0A3, 0x403029)
-    
-        self.is_timer_done = False 
+
+        self.answer = ""
+        self.question = None 
+
+        # Initialize game
         self.game = Game(
             game_engine = GameEngine.BuildGameEngineFromStatesAndTransitions(GAME_STATES_FILENAME, GAME_TRANSITIONS_FILENAME),
             player_name = playerName,
             difficulty_level = difficultyLevel
         )
 
+        # Create required labels. 
         self.timer_label = Label(
             "00", 
             font_name = "Times New Roman",
@@ -170,48 +202,159 @@ class GameScreen(ColorLayer):
             anchor_y = 'center'
         )
 
+        self.answer_label =  Label(
+            "Answer Text",
+            font_name = "Times New Roman",
+            font_size = 32,
+            anchor_x = 'center',
+            anchor_y = 'center'
+        )
+
+        self.score_board_label = Label(
+            "Score: ",
+            font_name = "Times New Roman",
+            font_size = 32,
+            anchor_x = 'center',
+            anchor_y = 'center'
+        )
+
+        self.instruction_label = Label(
+            "Press Enter to submit answer!",
+            font_name = "Times New Roman",
+            font_size = 32,
+            anchor_x = 'center',
+            anchor_y = 'center'
+        )
+
         self.timer_label.position = (director._window_virtual_width/10)*9, director._window_virtual_height/10
         self.question_label.position = director._window_virtual_width/2, director._window_virtual_height/2
-    
+        self.answer_label.position = director._window_virtual_width/2, director._window_virtual_height/2 - 50
+        self.score_board_label.position = director._window_virtual_width/10, director._window_virtual_height/10
+        self.instruction_label.position = director._window_virtual_width/2, (director._window_virtual_height/10)*9
+
+        self.add(self.instruction_label)
         self.add(self.timer_label)
         self.add(self.question_label)
+        self.add(self.score_board_label)
+        self.add(self.answer_label)
 
-        # Use the game object to populate quesiton and timer field. 
-        self.question = Question(2, 3, '+', 10)
+        self.display_quesiton()
+
+        print("Initialization Complete")
     
-        self.question_label.element.text = str(self.game.get_question())
-        # Start the timer at the end 
-        # Set the label to qustion time. 
-        self.timer_label.element.text = self.format_time(self.question.time)
+    
+    def update_answer_label(self):
+        self.answer_label.element.text = self.answer
 
-        Thread(target=self.question_timer, args=[self.question.time]).start()
-
-        # Lazy wait until the timer is done. 
-        while self.is_timer_done: continue
-
-        # Update the global game object. 
-        global game 
-        game = self.game
-
-        # director.replace(FadeTransition(Scene(TimeLimitExceeded())))
-
-    def question_timer(self, timer_duration):
-        a = 0
-        while a < timer_duration:
-            # Set 1 second timer and update the timer.  
-            a += 1
-            self.update_timer()
-            time.sleep(1)
-        self.is_timer_done = True 
-                
-    def update_question(self):
-        pass
+    def update_timer(self, a):
+        self.timer_label.element.text  = str(self.question.time - a)
+    
+    def check_answer_and_update_score(self):
+        if self.game.submit_answer(int(self.answer)):
+            print("Correct Answer")
+        else:
+            print("Incorrect Answer")
         
-    def format_time(self, t):
-        return "{}".format(t)
+        # Update Score board. 
+        self.score_board_label.element.text = " Score: {}".format(self.game.get_current_state())
 
-    def update_timer(self):
-        self.timer_label.element.text  = self.format_time(self.question.time)
+    def temp(self, callback, *args, **kwargs):
+        if self.timer_label.element.text == '0':
+            # Timer is finished. 
+            self.check_answer_and_update_score()
+
+            # If not game over, continue with next quesiton. 
+            if not self.game.is_game_over():
+                self.display_quesiton()
+            else:
+                # Move to next screen with score. 
+                director.replace(FadeTransition(Scene(ScoreBoardScreen())))
+
+    def display_quesiton(self):
+        # Reinitialize answer to empty string. 
+        self.answer = ""
+        self.answer_label.element.text = "_"
+
+        self.question = self.game.get_question()
+        print(self.question)
+
+        self.question_label.element.text = str(self.question)
+        self.timer_label.element.text = str(self.question.time)
+
+        self.timer_label.do(UpdateTimerAction(3))
+        
+        
+
+        self.schedule_interval(callback = self.temp, interval = 1)
+
+        # print("Time Done!")
+        
+
+    def on_time_out(self):
+        print("Time Out")
+        self.check_answer_and_update_score()
+
+        # If not game over, continue with next quesiton. 
+        if not self.game.is_game_over():
+            self.display_quesiton()
+        else:
+            # Move to next screen with score. 
+            director.replace(FadeTransition(Scene(ScoreBoardScreen())))
+
+
+    def on_key_press(self, key, modifiers):
+        if symbol_string(key) == "ENTER":
+            self.is_timer_done = True
+            # print("Answered")
+            # self.check_answer_and_update_score()
+
+            # # If not game over, continue with next quesiton. 
+            # if not self.game.is_game_over():
+            #     self.display_quesiton()
+            # else:
+            #     # Move to next screen with score. 
+            #     director.replace(FadeTransition(Scene(ScoreBoardScreen())))
+
+        else:
+            print(key - ord('0'))
+            self.answer += chr(key)
+            self.update_answer_label()
+
+
+class ScoreBoardScreen(ColorLayer):
+    is_event_handler = True
+
+    def __init__(self):
+        super(ScoreBoardScreen, self).__init__(0xBF907A, 0x806052, 0xFFC0A3, 0x403029)
+   
+        self.score_label = Label(
+            "Score ", 
+            font_name = "Times New Roman",
+            font_size = 32,
+            anchor_x = 'center',
+            anchor_y = 'center'
+            )
+        
+        self.instruction_label = Label(
+            "Press Enter to Exit.", 
+            font_name = "Times New Roman",
+            font_size = 32,
+            anchor_x = 'center',
+            anchor_y = 'center'
+            )
+        
+        self.score_label.position = director._window_virtual_width/2, director._window_virtual_height/2
+        self.instruction_label.position = director._window_virtual_width/2, director._window_virtual_height/2 - 100
+
+        self.add(self.score_label)
+        self.add(self.instruction_label)
+
+    def on_key_press(self, key, modifiers):
+        if symbol_string(key) == "ENTER":
+            sys.exit()
+            
+    
+
 
 """
 This layer is shown the user exceeds the time limit on the question.

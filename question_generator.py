@@ -32,6 +32,10 @@ class Question:
     def get_answer(self):
         return self._calculate_answer()
     
+    def get_choices(self):
+        # Use random operations to build a list of choices. 
+        return [self.get_answer() + random.randint(10, 100)] + [self.get_answer()]
+    
     def __str__(self):
         return "{} {} {}".format(self.operand_1, self.operation, self.operand_2)
     
