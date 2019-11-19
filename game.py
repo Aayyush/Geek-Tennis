@@ -13,7 +13,7 @@ class Game:
         self.curr_question = None
     
     def is_game_over(self):
-        return self.game_engine.current.is_end_state()
+        return not self.game_engine.current or self.game_engine.current.is_end_state()
     
     def get_question(self):
         self.curr_question = self.question_generator.generate_question()

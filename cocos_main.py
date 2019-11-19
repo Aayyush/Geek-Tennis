@@ -139,16 +139,6 @@ class DifficultyLayer(Menu):
         print("Player Name: {} Difficulty: {}".format(playerName, difficultyLevel))
         director.replace(FadeTransition(Scene(GameScreen())))
         print("Game Initialized")
-
-is_timer_done = False 
-
-class AnotherAction(IntervalAction):
-    def __init__(self, duration = 1):
-        super(UpdateTimerAction, self).__init__()
-        self.duration = duration
-
-    def update(self, t):
-        self.instruction_label.element.text = "Done!"
         
 class UpdateTimerAction(IntervalAction):
     
@@ -175,6 +165,7 @@ class GameScreen(ColorLayer):
     def __init__(self):
         super(GameScreen, self).__init__(0xBF907A, 0x806052, 0xFFC0A3, 0x403029)
 
+        # Placeholders
         self.answer = ""
         self.question = None 
 
@@ -238,18 +229,28 @@ class GameScreen(ColorLayer):
         self.add(self.score_board_label)
         self.add(self.answer_label)
 
-        self.display_quesiton()
+        self.display_question()
+    
+    def is_timer_done(self, callback, *args, **kwargs):
+        if self.timer_label.element.text == '0':
+            self.handle_answer()
+    
+    def display_question(self):
+        # Reinitialize answer to empty string. 
+        self.answer = ""
+        self.answer_label.element.text = "_"
 
-        print("Initialization Complete")
-    
-    
-    def update_answer_label(self):
-        self.answer_label.element.text = self.answer
+        self.question = self.game.get_question()
+        self.question_label.element.text = str(self.question)
+        self.timer_label.element.text = str(self.question.time)
 
-    def update_timer(self, a):
-        self.timer_label.element.text  = str(self.question.time - a)
+        # Schedule callback to check for timer every second.
+        self.schedule_interval(callback = self.is_timer_done, interval = 1)
+
+        # Add action for timer. 
+        self.timer_label.do(UpdateTimerAction(self.question.time))    
     
-    def check_answer_and_update_score(self):
+    def handle_answer(self):
         if self.game.submit_answer(int(self.answer)):
             print("Correct Answer")
         else:
@@ -258,67 +259,20 @@ class GameScreen(ColorLayer):
         # Update Score board. 
         self.score_board_label.element.text = " Score: {}".format(self.game.get_current_state())
 
-    def temp(self, callback, *args, **kwargs):
-        if self.timer_label.element.text == '0':
-            # Timer is finished. 
-            self.check_answer_and_update_score()
-
-            # If not game over, continue with next quesiton. 
-            if not self.game.is_game_over():
-                self.display_quesiton()
-            else:
-                # Move to next screen with score. 
-                director.replace(FadeTransition(Scene(ScoreBoardScreen())))
-
-    def display_quesiton(self):
-        # Reinitialize answer to empty string. 
-        self.answer = ""
-        self.answer_label.element.text = "_"
-
-        self.question = self.game.get_question()
-        print(self.question)
-
-        self.question_label.element.text = str(self.question)
-        self.timer_label.element.text = str(self.question.time)
-
-        self.timer_label.do(UpdateTimerAction(3))
-        
-        
-
-        self.schedule_interval(callback = self.temp, interval = 1)
-
-        # print("Time Done!")
-        
-
-    def on_time_out(self):
-        print("Time Out")
-        self.check_answer_and_update_score()
-
         # If not game over, continue with next quesiton. 
         if not self.game.is_game_over():
-            self.display_quesiton()
+            self.display_question()
         else:
             # Move to next screen with score. 
             director.replace(FadeTransition(Scene(ScoreBoardScreen())))
 
-
     def on_key_press(self, key, modifiers):
         if symbol_string(key) == "ENTER":
-            self.is_timer_done = True
-            # print("Answered")
-            # self.check_answer_and_update_score()
-
-            # # If not game over, continue with next quesiton. 
-            # if not self.game.is_game_over():
-            #     self.display_quesiton()
-            # else:
-            #     # Move to next screen with score. 
-            #     director.replace(FadeTransition(Scene(ScoreBoardScreen())))
-
+            self.handle_answer()
         else:
             print(key - ord('0'))
             self.answer += chr(key)
-            self.update_answer_label()
+            self.answer_label.element.text = self.answer
 
 
 class ScoreBoardScreen(ColorLayer):
