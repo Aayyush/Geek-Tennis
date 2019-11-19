@@ -273,6 +273,12 @@ class GameScreen(ColorLayer):
             print(key - ord('0'))
             self.answer += chr(key)
             self.answer_label.element.text = self.answer
+    
+    def on_exit(self):
+        global game
+        game = self.game
+        super(GameScreen, self).on_exit()
+
 
 
 class ScoreBoardScreen(ColorLayer):
@@ -282,7 +288,7 @@ class ScoreBoardScreen(ColorLayer):
         super(ScoreBoardScreen, self).__init__(0xBF907A, 0x806052, 0xFFC0A3, 0x403029)
    
         self.score_label = Label(
-            "Score ", 
+            "Score {}".format(game.get_current_state()), 
             font_name = "Times New Roman",
             font_size = 32,
             anchor_x = 'center',
@@ -307,59 +313,6 @@ class ScoreBoardScreen(ColorLayer):
         if symbol_string(key) == "ENTER":
             sys.exit()
             
-    
-
-
-"""
-This layer is shown the user exceeds the time limit on the question.
-"""     
-class TimeLimitExceeded(ColorLayer):
-    is_event_handler = True
-
-    def __init__(self):
-        super(GameScreen, self).__init__(0xBF907A, 0x806052, 0xFFC0A3, 0x403029)
-   
-        # Retrieve the global quesiton 
-        self.game = game 
-        self.message_label =  Label(
-            "You are out of time!! ", 
-            font_name = "Times New Roman",
-            font_size = 32,
-            anchor_x = 'center',
-            anchor_y = 'center'
-        )
-
-        self.info_label = Label(
-            "Score: {}".format(self.game.get_current_state()), 
-            font_name = "Times New Roman",
-            font_size = 32,
-            anchor_x = 'center',
-            anchor_y = 'center'
-        )
-
-        self.next_quesiton_label = Label(
-            "Press ENTER to proceed to your next challenge", 
-            font_name = "Times New Roman",
-            font_size = 32,
-            anchor_x = 'center',
-            anchor_y = 'center'
-        )
-
-        
-        self.message_label.position = director._window_virtual_width/2, director._window_virtual_height/2 - 50
-        self.info_label.position = director._window_virtual_width/2, director._window_virtual_height/2
-        self.next_quesiton_label.position = director._window_virtual_width/2, director._window_virtual_height/2 + 50
-
-        self.add(self.message_label)
-        self.add(self.info_label)
-        self.add(self.next_quesiton_label)
-
-    def on_key_press(self, key, modifiers):
-        if symbol_string(key) == "ENTER":
-            # Move back to game string by updating the next question. 
-            print("Moving on to next question")
-            director.replace(FadeTransition(Scene(GameScreen())))
-
 # Starting off the cocos2d application
 director.init(
     autoscale = True, 
