@@ -1,4 +1,3 @@
-# TODO: Refactor 
 
 import sys
 import cocos 
@@ -9,7 +8,6 @@ from cocos.director import director
 from cocos.menu import Menu, MenuItem, CENTER
 from cocos.scenes import FadeTransition
 from cocos.scene import Scene
-
 from pyglet.window.key import symbol_string
 
 from game import GameDifficulty, Game
@@ -24,6 +22,7 @@ from cocos.actions import IntervalAction
 from cocos.actions.interval_actions import MoveTo
 from cocos import cocosnode
 
+# Global variables to keep track of user info through the game. 
 playerName = ""
 difficultyLevel = None 
 game = None
@@ -84,13 +83,13 @@ class IntroductionLayer(ColorLayer):
     
     def on_key_press(self, key, modifiers):
         char_key = symbol_string(key)
-        print(char_key)
         if char_key == "ENTER":
-            print("Transition to next layer with the username.")
+            # Segue to next layer with username
             global playerName
             playerName = self.player_name
             director.replace(FadeTransition(Scene(DifficultyLayer())))
-
+        
+        # Add to the username if valid characters. 
         elif 'A' <= char_key <= 'z':
             self.player_name += char_key 
             self.update_player_name()
@@ -103,7 +102,7 @@ class DifficultyLayer(Menu):
     is_event_handler = True
 
     def __init__(self):
-        super(DifficultyLayer, self).__init__("Choose Difficulty")
+        super(DifficultyLayer, self).__init__("Difficulty")
 
         self.menu_halign = CENTER 
         self.menu_valign = CENTER 
@@ -116,30 +115,28 @@ class DifficultyLayer(Menu):
 
         self.create_menu(menu_items)
     
+    # Update global variables which is accessed in the next layer later on. 
     def easy_difficulty(self):
-        print("Easy")
         global difficultyLevel
         difficultyLevel = GameDifficulty.Easy
         self.transition_next_scene()
 
     def medium_difficulty(self):
-        print("Medium")
         global difficultyLevel
         difficultyLevel = GameDifficulty.Medium
         self.transition_next_scene()
 
     def hard_difficulty(self):
-        print("Hard")
         global difficultyLevel
         difficultyLevel = GameDifficulty.Hard
         self.transition_next_scene()
     
     def transition_next_scene(self):
-        print("Next Scene")
-        print("Player Name: {} Difficulty: {}".format(playerName, difficultyLevel))
         director.replace(FadeTransition(Scene(GameScreen())))
-        print("Game Initialized")
-        
+
+"""
+Custom Action to timer object. 
+"""  
 class UpdateTimerAction(IntervalAction):
     
     def __init__(self, duration):
@@ -231,6 +228,7 @@ class GameScreen(ColorLayer):
 
         self.display_question()
     
+    # Method that checks if timer is done at intervals of 1 second. 
     def is_timer_done(self, callback, *args, **kwargs):
         if self.timer_label.element.text == '0':
             self.handle_answer()
@@ -259,7 +257,7 @@ class GameScreen(ColorLayer):
         # Update Score board. 
         self.score_board_label.element.text = " Score: {}".format(self.game.get_current_state())
 
-        # If not game over, continue with next quesiton. 
+        # If not game over, continue with next question. 
         if not self.game.is_game_over():
             self.display_question()
         else:
@@ -280,7 +278,9 @@ class GameScreen(ColorLayer):
         super(GameScreen, self).on_exit()
 
 
-
+"""
+This screen is to show the final outcome of the game. 
+"""
 class ScoreBoardScreen(ColorLayer):
     is_event_handler = True
 
@@ -312,14 +312,18 @@ class ScoreBoardScreen(ColorLayer):
     def on_key_press(self, key, modifiers):
         if symbol_string(key) == "ENTER":
             sys.exit()
-            
-# Starting off the cocos2d application
-director.init(
-    autoscale = True, 
-    caption = "Geek Tennis"
-)
-director.run(
-    scene.Scene(
-        IntroductionLayer()
+
+def run():
+    # Starting off the cocos2d application
+    director.init(
+        autoscale = True, 
+        caption = "Geek Tennis"
     )
-)
+    director.run(
+        scene.Scene(
+            IntroductionLayer()
+        )
+    )
+
+if __name__ == "__main__":
+    run()

@@ -1,10 +1,5 @@
 import enum 
-
-class InvalidStateException(Exception):
-    pass 
-
-class InvalidActionException(Exception):
-    pass 
+from cutom_exceptions import *
 
 class Action(enum.Enum):
     Win = 1
