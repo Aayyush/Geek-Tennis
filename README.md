@@ -33,3 +33,8 @@ Aayush Gupta
 Peniel Abebe 
 Swarnim Bhandari 
 
+## Notes 
+Due to the resolution of OS x, the game does not span the entire screen which is a bug on pyglet. 
+In order to solve this issue, run the patch using the command:
+
+patch < osx_hidpi.patch -d <root-directory>/venv/lib/python3.6/site-packages/pyglet-1.4.3-py3.6.egg/pyglet/gl

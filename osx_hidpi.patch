@@ -1,0 +1,27 @@
+diff -r cd6753287628 pyglet/gl/cocoa.py
+--- a/pyglet/gl/cocoa.py	Tue Jun 30 20:23:00 2015 +0200
++++ b/pyglet/gl/cocoa.py	Fri Jul 03 00:20:24 2015 +0200
+@@ -167,6 +167,7 @@
+         # The NSView instance should be attached to a nondeferred window before calling
+         # setView, otherwise you get an "invalid drawable" message.
+         self._nscontext.setView_(canvas.nsview)
++        self._nscontext.view().setWantsBestResolutionOpenGLSurface_(1)
+         self.set_current()
+ 
+     def detach(self):
+diff -r cd6753287628 pyglet/window/__init__.py
+--- a/pyglet/window/__init__.py	Tue Jun 30 20:23:00 2015 +0200
++++ b/pyglet/window/__init__.py	Fri Jul 03 00:20:24 2015 +0200
+@@ -722,7 +722,11 @@
+         Override this event handler with your own to create another
+         projection, for example in perspective.
+         '''
+-        gl.glViewport(0, 0, width, height)
++        view = self.context._nscontext.view()
++        bounds = view.convertRectToBacking_(view.bounds()).size
++        back_width, back_height = (int(bounds.width), int(bounds.height))
++
++        gl.glViewport(0, 0, back_width, back_height)
+         gl.glMatrixMode(gl.GL_PROJECTION)
+         gl.glLoadIdentity()
+         gl.glOrtho(0, width, 0, height, -1, 1)
