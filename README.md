@@ -8,9 +8,21 @@ Link: https://docs.google.com/document/d/1ePfLg7rh5XdB3AfLKPVsJC5AKqsdLpQo2Ag_X8
 1. Setup a virtual environment.
 2. Install dependencies using pip install -r requirements.txt 
 3. Add cocos2d-0.6.7 to the PYTHONPATH using the command export PYTHONPATH="$PYTHONPATH:<path to cocos2d-0.6.7>"
-[Still in Development]
-4. Run python cocos_main.py to the run the GUI version of the game which is still under development. 
-5. Run main.py to run the command line version of the game. 
+4. Run python game_gui.py to the run the GUI version of the game and python game_cli.py to run the command line version. 
+
+## Design 
+This project is designed into 3 main parts. 
+
+# Game Engine
+This game engine uses the game_states.txt and game_transitions.txt to build the DFA for the game. This game engine can 
+build any DFA given correct dat ain the states and transitions file. 
+
+# Game 
+The game object handles all the information regarding a game session. This is the model of the game and can be used to 
+build other interfaces on top of it. 
+
+# GUI
+This comprises of a collection of layer objects that show a simple UI using cocos2d framework. 
 
 ## Dependencies 
 1. Cocos2d
