@@ -163,7 +163,7 @@ class GameScreen(ColorLayer):
         super(GameScreen, self).__init__(0xBF907A, 0x806052, 0xFFC0A3, 0x403029)
 
         # Placeholders
-        self.answer = ""
+        self.answer = "0"
         self.question = None 
 
         # Initialize game
@@ -249,6 +249,8 @@ class GameScreen(ColorLayer):
         self.timer_label.do(UpdateTimerAction(self.question.time))    
     
     def handle_answer(self):
+        if not self.answer:
+            self.answer = 10
         if self.game.submit_answer(int(self.answer)):
             print("Correct Answer")
         else:

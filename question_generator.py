@@ -54,7 +54,7 @@ class QuestionGenerator:
         }
 
         self.difficulty_time_mapping = {
-            GameDifficulty.Easy: 10,
+            GameDifficulty.Easy: 15,
             GameDifficulty.Medium: 8,
             GameDifficulty.Hard: 5
         }
